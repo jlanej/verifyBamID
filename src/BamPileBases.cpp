@@ -192,7 +192,11 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                             (readSequence[readIndex] != 'N')) {
                             char cOp = cigarRoller.getCigarCharOpFromQueryIndex(readIndex);
                             if (cOp != 'S') {
-                                Logger::gLogger->error(string s(1, cOp));
+
+                                std::string s;
+                                s.push_back(cOp);
+
+                                Logger::gLogger->error(s);
 
                                 nRGIndices.push_back(rgIdx);
                                 cBases.push_back(readSequence[readIndex]);
