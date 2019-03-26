@@ -188,21 +188,27 @@ int BamPileBases::readMarker(const char* chrom, int position, bool ignoreOverlap
 
 	cigar = samRecord.getCigar();
 	cigarRoller.Set(cigar.c_str());
-
 	if ( offset >= 0 ) {
 	  int32_t readIndex = cigarRoller.getQueryIndex(offset);
-	  bool unique = ignoreOverlapPair ? true : readNames.insert(samRecord.getReadName()).second;
-	  //if ( !unique ) 
-	  //  error("foo -- detected overlapping paired end read for %s\n",samRecord.getReadName());
+	    char cOp = cigarRoller.getCigarCharOpFromQueryIndex(readIndex);
+        if ( cOp != 'S' ) {
 
-	  if ( unique && ( readIndex != CigarRoller::INDEX_NA ) ) {
-	    if ( ( static_cast<int>(readQuality[readIndex]) >= minQ + 33 ) && ( readSequence[readIndex] != 'N' ) ) {
-	      nRGIndices.push_back(rgIdx);
-	      cBases.push_back(readSequence[readIndex]);
-	      cQuals.push_back(readQuality[readIndex]);
-	      cMapQs.push_back(samRecord.getMapQuality());
-	    }
-	  }
+            bool unique = ignoreOverlapPair ? true : readNames.insert(samRecord.getReadName()).second;
+
+            //if ( !unique )
+            //  error("foo -- detected overlapping paired end read for %s\n",samRecord.getReadName());
+
+            if (unique && (readIndex != CigarRoller::INDEX_NA)) {
+                if ((static_cast<int>(readQuality[readIndex]) >= minQ + 33) && (readSequence[readIndex] != 'N')) {
+                    nRGIndices.push_back(rgIdx);
+                    cBases.push_back(readSequence[readIndex]);
+                    cQuals.push_back(readQuality[readIndex]);
+                    cMapQs.push_back(samRecord.getMapQuality());
+                }
+            }
+        }else{
+            Logger::gLogger->error("found soft");
+        }
 	}
 	if ( (int)(cBases.size() - nBegins.back()) >= maxDepth ) break;
       }
