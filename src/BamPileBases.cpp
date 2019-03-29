@@ -180,7 +180,7 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                 cigarRoller.Set(cigar.c_str());
 //                Logger::gLogger->warning(cigar.c_str());
 
-                if (offset >= 0) {
+                if (offset >= 10&&samRecord.get1BasedAlignmentEnd()>position+10) {
                     int32_t readIndex = cigarRoller.getQueryIndex(offset);
 
 
@@ -192,7 +192,7 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                     if (unique && (readIndex != CigarRoller::INDEX_NA)) {
                         if ((static_cast<int>(readQuality[readIndex]) >= minQ + 33) &&
                             (readSequence[readIndex] != 'N')) {
-                            char cOp = cigarRoller.getCigarCharOpFromQueryIndex(offset);
+                            char cOp = cigarRoller.getCigarCharOpFromQueryIndex(readIndex);
                             if(offset!=readIndex) {
 //                            std::cout<<std::to_string(readIndex);
                                 std::cout << std::to_string(position) << '\n';
@@ -206,7 +206,7 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                             }
 //                            char r = '0'+readIndex;
 //                            Logger::gLogger->warning();
-                            if (cOp != 'S') {
+                            if (cOp != 'S'&&offset==readIndex) {
 
 
                                 nRGIndices.push_back(rgIdx);
@@ -214,7 +214,7 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                                 cQuals.push_back(readQuality[readIndex]);
                                 cMapQs.push_back(samRecord.getMapQuality());
                             } else {
-                                Logger::gLogger->warning("found soft");
+//                                Logger::gLogger->error("found soft");
                             }
                         }
                     }
