@@ -104,7 +104,7 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
     CigarRoller cigarRoller;
     std::set<std::string> readNames;
     nBegins.push_back(cBases.size());
-
+//    Logger::gLogger->warning("HI");
     // Check for chr.
     const char *searchChrom = chrom;
     if (strncmp(chrom, "chr", 3) == 0) {
@@ -178,6 +178,8 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
 
                 cigar = samRecord.getCigar();
                 cigarRoller.Set(cigar.c_str());
+//                Logger::gLogger->warning(cigar.c_str());
+
                 if (offset >= 0) {
                     int32_t readIndex = cigarRoller.getQueryIndex(offset);
 
@@ -190,20 +192,29 @@ int BamPileBases::readMarker(const char *chrom, int position, bool ignoreOverlap
                     if (unique && (readIndex != CigarRoller::INDEX_NA)) {
                         if ((static_cast<int>(readQuality[readIndex]) >= minQ + 33) &&
                             (readSequence[readIndex] != 'N')) {
-                            char cOp = cigarRoller.getCigarCharOpFromQueryIndex(readIndex);
+                            char cOp = cigarRoller.getCigarCharOpFromQueryIndex(offset);
+                            if(offset!=readIndex) {
+//                            std::cout<<std::to_string(readIndex);
+                                std::cout << std::to_string(position) << '\n';
+                                std::cout << std::to_string(readStartPosition) << '\n';
+                                std::cout << std::to_string(samRecord.get1BasedAlignmentEnd()) << '\n';
+
+                                std::cout << std::to_string(offset) << '\n';
+                                std::cout << std::to_string(readIndex) << '\n';
+                                std::cout << cOp << '\n';
+                                std::cout << cigar.c_str() << '\n';
+                            }
+//                            char r = '0'+readIndex;
+//                            Logger::gLogger->warning();
                             if (cOp != 'S') {
 
-                                std::string s;
-                                s.push_back(cOp);
-
-                                Logger::gLogger->error(s);
 
                                 nRGIndices.push_back(rgIdx);
                                 cBases.push_back(readSequence[readIndex]);
                                 cQuals.push_back(readQuality[readIndex]);
                                 cMapQs.push_back(samRecord.getMapQuality());
                             } else {
-                                Logger::gLogger->error("found soft");
+                                Logger::gLogger->warning("found soft");
                             }
                         }
                     }
